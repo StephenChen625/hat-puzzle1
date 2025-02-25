@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Settings2, RefreshCw, Plus, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 
 const HatPuzzle2 = () => {
   const INITIAL_HATS = {
