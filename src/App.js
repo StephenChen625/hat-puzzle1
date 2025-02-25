@@ -29,7 +29,8 @@ function App() {
 
         <footer className="bg-white border-t mt-8">
           <div className="max-w-4xl mx-auto px-6 py-4 text-center text-gray-600">
-            逻辑推理题集 - 黑白帽子问题
+            <p>逻辑推理题集 - 黑白帽子问题</p>
+            <p className="mt-1 text-sm">© 2025 <span className="font-medium">孙维刚教育研究院 - 陈硕老师</span>.</p>
           </div>
         </footer>
       </div>
