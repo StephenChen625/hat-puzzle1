@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 
 const HatPuzzle2 = () => {
@@ -18,11 +18,28 @@ const HatPuzzle2 = () => {
   });
   const [showSetup, setShowSetup] = useState(false);
   const [exploringPerson, setExploringPerson] = useState(null);
-
-  const totalHats = {
+  const [hatCounts, setHatCounts] = useState({
     white: 3,
     black: 2
-  };
+  });
+
+  // 监听人数变化，更新帽子总数
+  useEffect(() => {
+    if (people.length > 3) {
+      // 基础数量是3白2黑，每增加一个人，白黑各加1
+      const additionalPeople = people.length - 3;
+      setHatCounts({
+        white: 3 + additionalPeople,
+        black: 2 + additionalPeople
+      });
+    } else {
+      // 恢复初始值
+      setHatCounts({
+        white: 3,
+        black: 2
+      });
+    }
+  }, [people.length]);
 
   const getCurrentPerson = () => {
     if (showSetup) {
@@ -59,6 +76,10 @@ const HatPuzzle2 = () => {
     });
     setShowSetup(false);
     setExploringPerson(null);
+    setHatCounts({
+      white: 3,
+      black: 2
+    });
   };
 
   const handleStepBack = () => {
@@ -108,6 +129,11 @@ const HatPuzzle2 = () => {
   const renderAnswer = (person) => {
     if (showSetup) return null; // 探索模式下不显示回答
 
+    // 确保这个人有对应的答案数据
+    if (!answers.hasOwnProperty(person)) {
+      return null;
+    }
+
     const isCurrentPerson = currentStep === people.indexOf(person) + 1;
 
     if (!isCurrentPerson && answers[person] === null) {
@@ -149,11 +175,15 @@ const HatPuzzle2 = () => {
   const removePerson = (personToRemove) => {
     if (people.length <= 3) return; // 不允许少于3人
     setPeople(people.filter(p => p !== personToRemove));
-    setHats(prev => {
-      const newHats = {...prev};
-      delete newHats[personToRemove];
-      return newHats;
-    });
+    
+    // 移除对应的帽子和答案
+    const newHats = {...hats};
+    delete newHats[personToRemove];
+    setHats(newHats);
+    
+    const newAnswers = {...answers};
+    delete newAnswers[personToRemove];
+    setAnswers(newAnswers);
   };
 
   return (
@@ -161,7 +191,7 @@ const HatPuzzle2 = () => {
       <div className="mb-8 p-4 bg-blue-50 rounded-lg">
         <h2 className="text-xl font-bold mb-2">规则说明</h2>
         <ul className="space-y-1">
-          <li>• 一共有5顶帽子（3白2黑）</li>
+          <li>• 一共有 {hatCounts.white + hatCounts.black} 顶帽子（{hatCounts.white}白{hatCounts.black}黑）</li>
           <li>• 每个人能看到前面（右边）所有人的帽子</li>
           <li>• 按顺序回答是否知道自己帽子的颜色</li>
           <li>• 回答时只能说"知道"或"不知道"</li>
@@ -180,7 +210,7 @@ const HatPuzzle2 = () => {
                 strokeWidth="2"
               />
             </svg>
-            <span className="ml-1">×{totalHats.white}</span>
+            <span className="ml-1">×{hatCounts.white}</span>
           </div>
           <div className="flex items-center">
             <svg width="24" height="24" viewBox="0 0 40 40" className="inline-block">
@@ -191,7 +221,7 @@ const HatPuzzle2 = () => {
                 strokeWidth="2"
               />
             </svg>
-            <span className="ml-1">×{totalHats.black}</span>
+            <span className="ml-1">×{hatCounts.black}</span>
           </div>
         </div>
       </div>
@@ -245,7 +275,7 @@ const HatPuzzle2 = () => {
                 setPeople([...people, nextLetter]);
                 setHats(prev => ({
                   ...prev,
-                  [nextLetter]: people.length % 2 === 0 ? 'white' : 'black'
+                  [nextLetter]: 'white' // 默认为白帽子
                 }));
               }}
               className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center"
