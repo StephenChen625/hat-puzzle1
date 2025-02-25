@@ -75,7 +75,6 @@ const HatPuzzle2 = () => {
   };
 
   const renderPersonWithHat = (person) => {
-    const isCurrentPerson = getCurrentPerson() === person;
     const isTransparent = shouldBeTransparent(person);
     const showDashedHat = shouldShowDashedHat(person);
     
