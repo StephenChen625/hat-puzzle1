@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Settings2, RefreshCw, Plus, Minus, Moon } from 'lucide-react';
 
 const HatPuzzle3 = () => {
@@ -13,19 +13,8 @@ const HatPuzzle3 = () => {
   const [roundCount, setRoundCount] = useState(0);
   const [lightsOn, setLightsOn] = useState(true);
   
-  // 生成随机位置和帽子
-  useEffect(() => {
-    generatePeople();
-  }, []);
-  
-  // 当黑帽子数量变化时，更新人物
-  useEffect(() => {
-    if (showSetup) {
-      updateBlackHatCount();
-    }
-  }, [blackHatCount, showSetup]);
-  
-  const generatePeople = () => {
+  // 使用useCallback包装生成人物的函数，使其可以被依赖
+  const generatePeople = useCallback(() => {
     // 确保黑帽子数量不超过总人数
     const safeBlackHatCount = Math.min(blackHatCount, peopleCount);
     
@@ -86,9 +75,10 @@ const HatPuzzle3 = () => {
     }
     
     setPeople(newPeople);
-  };
+  }, [blackHatCount, peopleCount]);
   
-  const updateBlackHatCount = () => {
+  // 使用useCallback包装更新黑帽子数量的函数
+  const updateBlackHatCount = useCallback(() => {
     // 调整黑帽子数量，但保持人的位置不变
     setPeople(prevPeople => {
       const newPeople = [...prevPeople];
@@ -128,25 +118,40 @@ const HatPuzzle3 = () => {
       
       return newPeople;
     });
-  };
+  }, [blackHatCount, peopleCount]);
   
-  const handleReset = () => {
+  // 初始化生成人物
+  useEffect(() => {
+    generatePeople();
+  }, [generatePeople]);
+  
+  // 当黑帽子数量变化时，更新人物
+  useEffect(() => {
+    if (showSetup) {
+      updateBlackHatCount();
+    }
+  }, [blackHatCount, showSetup, updateBlackHatCount]);
+  
+  // 使用useCallback包装重置函数
+  const handleReset = useCallback(() => {
     generatePeople();
     setCurrentThinker(null);
     setRoundCount(0);
     setLightsOn(true);
-  };
+  }, [generatePeople]);
   
-  const handlePeopleCountChange = (count) => {
+  // 使用useCallback包装更改人数的函数
+  const handlePeopleCountChange = useCallback((count) => {
     setPeopleCount(count);
     
     // 确保黑帽子数量不超过总人数
     if (blackHatCount > count) {
       setBlackHatCount(count);
     }
-  };
+  }, [blackHatCount]);
   
-  const toggleHatColor = (id) => {
+  // 使用useCallback包装切换帽子颜色的函数
+  const toggleHatColor = useCallback((id) => {
     if (!showSetup) return;
     
     setPeople(prevPeople => {
@@ -172,9 +177,10 @@ const HatPuzzle3 = () => {
       
       return updatedPeople;
     });
-  };
+  }, [showSetup]);
   
-  const advanceRound = () => {
+  // 使用useCallback包装关灯/开灯函数
+  const advanceRound = useCallback(() => {
     if (lightsOn) {
       // 关灯
       setLightsOn(false);
@@ -183,9 +189,10 @@ const HatPuzzle3 = () => {
       // 开灯
       setLightsOn(true);
     }
-  };
+  }, [lightsOn]);
   
-  const renderPerson = (person) => {
+  // 渲染人物
+  const renderPerson = useCallback((person) => {
     const isThinking = currentThinker === person.id;
     
     return (
@@ -216,7 +223,7 @@ const HatPuzzle3 = () => {
           <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
             <svg width="40" height="40" viewBox="0 0 60 60">
               <path 
-                d="M8 47 L30 0 L52 47 Z" 
+                d="M8 47 L30 0 L52 47 Z"
                 fill={isThinking ? 'none' : (person.hatColor === 'black' ? 'black' : 'white')}
                 stroke={person.hatColor === 'black' ? 'black' : '#888'}
                 strokeWidth="2"
@@ -250,7 +257,7 @@ const HatPuzzle3 = () => {
         </div>
       </div>
     );
-  };
+  }, [currentThinker, showSetup, toggleHatColor]);
   
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -266,7 +273,7 @@ const HatPuzzle3 = () => {
       
       <div className="mb-4 p-4 bg-indigo-50 rounded-lg flex items-center justify-center">
         <div className="font-medium flex items-center">
-          <span>共识：至少有一顶黑帽子</span>
+          <span>已知信息：至少有一顶黑帽子</span>
         </div>
       </div>
       
@@ -282,7 +289,7 @@ const HatPuzzle3 = () => {
         <div className={`relative w-full h-full transition-all duration-500 ${
           !lightsOn ? 'opacity-60 contrast-110 brightness-75' : ''
         }`}>
-          {people.map(person => renderPerson(person))}
+          {people.map(renderPerson)}
         </div>
         
         {/* Current round indicator */}
